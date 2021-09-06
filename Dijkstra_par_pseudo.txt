@@ -1,0 +1,35 @@
+Parallel Dijkstra Pseudo
+
+int p //total threads
+int c //columns per thread
+int f //final thread column count
+
+parallel closest u{
+    sequentially find smallest l[u] where u between threadIdx*c and threadIdx*(c+1)
+    store in shared memory
+}
+
+parallel update{
+    load l[u] = l_u
+    for i between threadIdx*c and threadIdx*(c+1)
+        dist = l_u + E[u*n+i];
+        if(l[i] < dist)
+            l[i] = dist
+            p[i] = u
+}
+
+// how much communication do I have to invest to work with 2 kernels?
+
+void Dijkstra(E, n, s, l, path, p){
+    split matrix into 1d blocks
+    each thread initializes l, p, V_t locally
+    SEQUENTIAL WHILE (V_t != V){
+        reduced l = parallel closest u()
+        wait until all blocks complete
+        sequentially minimize reduced l to get smallest u
+        add u to V_t
+        broadcast l[u]
+        parallel update l-vector, p-vector
+    }
+
+}
